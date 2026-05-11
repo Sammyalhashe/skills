@@ -15,7 +15,7 @@ in
 
   config = lib.mkIf cfg.enable {
     home.file.".claude/plugins/marketplaces/${marketplace}" = {
-      source = "${cfg.package}/plugins/${marketplace}";
+      source = "${cfg.package}/claude";
       recursive = true;
     };
   };

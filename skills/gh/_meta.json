@@ -1,0 +1,5 @@
+{
+  "name": "gh",
+  "description": "GitHub CLI skill for managing repositories, PRs, issues, and more.",
+  "version": "1.0.0"
+}

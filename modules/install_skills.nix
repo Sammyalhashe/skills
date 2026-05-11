@@ -8,34 +8,28 @@ pkgs.stdenvNoCC.mkDerivation {
     # Remove any stale result symlink from source
     rm -rf $out/result
 
-    # Base plugin directory with subdirectories
-    mkdir -p $out/plugins/${marketplace}/plugins/${plugin}/skills
-    mkdir -p $out/plugins/${marketplace}/plugins/${plugin}/agents
-    mkdir -p $out/plugins/${marketplace}/plugins/${plugin}/downloaded
+    # Create top-level platform directories
+    mkdir -p $out/claude
+    mkdir -p $out/gemini
+    mkdir -p $out/openai
 
-    # Install skills
+    # Install skills into each platform's structure
     if [ -d skills ]; then
       for skillDir in skills/*/; do
-        if [ -d "$skillDir" ] && [ "$(basename "$skillDir")" != "." ]; then
-          cp -r "$skillDir" $out/plugins/${marketplace}/plugins/${plugin}/skills/
-        fi
-      done
-    fi
+        if [ -d "$skillDir" ]; then
+          skillName=$(basename "$skillDir")
+          
+          # Claude structure
+          mkdir -p "$out/claude/$skillName"
+          cp -r "$skillDir/." "$out/claude/$skillName/"
 
-    # Install agents
-    if [ -d agents ]; then
-      for agentDir in agents/*/; do
-        if [ -d "$agentDir" ] && [ "$(basename "$agentDir")" != "." ]; then
-          cp -r "$agentDir" $out/plugins/${marketplace}/plugins/${plugin}/agents/
-        fi
-      done
-    fi
+          # Gemini structure
+          mkdir -p "$out/gemini/$skillName"
+          cp -r "$skillDir/." "$out/gemini/$skillName/"
 
-    # Install downloaded skills/agents
-    if [ -d downloaded ]; then
-      for item in downloaded/*/; do
-        if [ -d "$item" ] && [ "$(basename "$item")" != "." ]; then
-          cp -r "$item" $out/plugins/${marketplace}/plugins/${plugin}/downloaded/
+          # OpenAI structure
+          mkdir -p "$out/openai/$skillName"
+          cp -r "$skillDir/." "$out/openai/$skillName/"
         fi
       done
     fi
