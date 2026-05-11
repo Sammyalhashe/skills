@@ -14,9 +14,11 @@ pkgs.stdenvNoCC.mkDerivation {
     mkdir -p $out/openai
 
     # Track skills for AGENTS.md
-    agents_file=$out/openai/AGENTS.md
-    echo "# AI Agents Skills & Instructions" > $agents_file
-    echo "This file contains consolidated instructions for all available skills." >> $agents_file
+    for platform in claude gemini openai; do
+      agents_file=$out/$platform/AGENTS.md
+      echo "# AI Agents Skills & Instructions" > $agents_file
+      echo "This file contains consolidated instructions for all available skills for the $platform platform." >> $agents_file
+    done
 
     # Install skills into each platform's structure
     if [ -d skills ]; then
@@ -36,11 +38,13 @@ pkgs.stdenvNoCC.mkDerivation {
           mkdir -p "$out/openai/$skillName"
           cp -r "$skillDir/." "$out/openai/$skillName/"
 
-          # Append to AGENTS.md
+          # Append to AGENTS.md for each platform
           if [ -f "$skillDir/SKILL.md" ]; then
-            echo -e "\n\n---" >> $agents_file
-            echo "# Skill: $skillName" >> $agents_file
-            cat "$skillDir/SKILL.md" >> $agents_file
+            for platform in claude gemini openai; do
+              echo -e "\n\n---" >> $out/$platform/AGENTS.md
+              echo "# Skill: $skillName" >> $out/$platform/AGENTS.md
+              cat "$skillDir/SKILL.md" >> $out/$platform/AGENTS.md
+            done
           fi
         fi
       done
