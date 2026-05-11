@@ -24,8 +24,11 @@
             src = self;
 
             installPhase = ''
-              # Base plugin directory
-              mkdir -p $out/plugins/${marketplace}/plugins/${plugin}
+              # Remove any stale result symlink from source
+              rm -rf $out/result
+
+              # Base plugin directory with subdirectories
+              mkdir -p $out/plugins/${marketplace}/plugins/${plugin}/{skills,agents,downloaded}
 
               # Install skills
               if [ -d skills ]; then
