@@ -49,5 +49,13 @@ pkgs.stdenvNoCC.mkDerivation {
         fi
       done
     fi
+
+    # Install binaries
+    if [ -d bin ]; then
+      for platform in claude gemini openai; do
+        mkdir -p "$out/$platform/bin"
+        cp -r bin/* "$out/$platform/bin/"
+      done
+    fi
   '';
 }
