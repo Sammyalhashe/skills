@@ -33,8 +33,8 @@ jj git clone <url> --branch <bookmark>
 # List remotes
 jj git remote list
 
-# Add a remote
-jj git remote add <name> <url>
+# Add a remote (prefer SSH for git operations)
+jj git remote add <name> git@github.com:<owner>/<repo>.git
 
 # Remove a remote (does not delete the underlying Git remote)
 jj git remote remove <name>
@@ -247,7 +247,66 @@ jj describe -m "feature: implement X"
 jj git push --bookmark <bookmark-name>
 ```
 
-## Tips
+## Configuration
+
+### Config File Locations
+
+Jujutsu config uses a two-level system:
+- **Repo config**: `.jj/repo/config.toml` (or `config.toml` inside `.jj/`) — repo-specific settings
+- **User config**: `~/.config/jj/config.toml` — global settings
+
+### Setting Config Non-Interactively
+
+Use `--config` flag to set config values without opening an editor:
+
+```bash
+# Set a repo-level config value
+jj --config "user.name='Sammy'" --config "user.email='sammy@example.com'" status
+
+# Set a global config value via user config
+echo 'user.name = "Sammy"' >> ~/.config/jj/config.toml
+echo 'user.email = "sammy@example.com"' >> ~/.config/jj/config.toml
+
+# Set the push revset to push all bookmarks by default
+jj --config "git.push=bookmark" status
+
+# Configure jj to use main as default branch
+jj --config "git.push=bookmark" status
+```
+
+### Config Edit
+
+`jj config edit` opens an interactive editor. To avoid the pager prompt, set the EDITOR env var:
+
+```bash
+# Non-interactive config edit (requires EDITOR to be set)
+EDITOR="vi" jj config edit --repo
+EDITOR="vi" jj config edit
+
+# Or use cat to append directly (no interactive prompt)
+echo 'ui.log-format = "compact"' >> ~/.config/jj/config.toml
+echo 'git.push = "bookmark"' >> ~/.config/jj/config.toml
+```
+
+### Common Config Settings
+
+```toml
+# ~/.config/jj/config.toml
+[user]
+name = "Your Name"
+email = "your@email.com"
+
+[ui]
+log-format = "compact"  # shorter log output
+
+[git]
+# Push all bookmarks by default instead of only tracking ones
+push = "bookmark"
+# Default remote for push/fetch operations
+push-remote = "origin"
+```
+
+### Tips
 
 - Use `jj help <command>` for detailed help on any command
 - Use `jj log --graph` for a visual revision graph
