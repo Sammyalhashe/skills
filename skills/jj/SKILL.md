@@ -117,7 +117,7 @@ After fetching, remote bookmarks are updated but local bookmarks are not. You mu
 
 ```bash
 # Rebase the current workspace's working copy onto the latest remote bookmark
-jj git rebase -o <remote>/<bookmark>
+jj rebase -o <remote>/<bookmark>
 
 # Rebase a specific commit
 jj rebase -s <commit-id> -d <new-parent>
@@ -126,7 +126,7 @@ jj rebase -s <commit-id> -d <new-parent>
 Common pattern for syncing with upstream:
 ```bash
 jj git fetch
-jj git rebase -o main@origin
+jj rebase -o main@origin
 ```
 
 ### Pushing
