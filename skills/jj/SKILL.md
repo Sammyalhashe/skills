@@ -205,6 +205,21 @@ jj bookmark untrack <bookmark> --remote=origin
 jj bookmark delete <name>
 ```
 
+### Syncing Bookmarks After Push
+
+When you push to a remote, jj makes the working copy commit immutable and creates a new empty working copy commit on top. To keep your bookmarks in sync with the pushed commit:
+
+```bash
+# After pushing, set your local bookmarks forward to the pushed commit
+jj bookmark set main -r @
+jj bookmark set master -r @
+
+# Then push again (the new empty commit is pushed too)
+jj git push --bookmark main --bookmark master
+```
+
+This pattern — set bookmarks forward, then push — is the standard way to keep bookmarks aligned with the remote after each push.
+
 ## Common Workflows
 
 ### Daily Sync Workflow
