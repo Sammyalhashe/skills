@@ -13,6 +13,11 @@ pkgs.stdenvNoCC.mkDerivation {
     mkdir -p $out/gemini
     mkdir -p $out/openai
 
+    # Track skills for AGENTS.md
+    agents_file=$out/openai/AGENTS.md
+    echo "# AI Agents Skills & Instructions" > $agents_file
+    echo "This file contains consolidated instructions for all available skills." >> $agents_file
+
     # Install skills into each platform's structure
     if [ -d skills ]; then
       for skillDir in skills/*/; do
@@ -30,6 +35,13 @@ pkgs.stdenvNoCC.mkDerivation {
           # OpenAI structure
           mkdir -p "$out/openai/$skillName"
           cp -r "$skillDir/." "$out/openai/$skillName/"
+
+          # Append to AGENTS.md
+          if [ -f "$skillDir/SKILL.md" ]; then
+            echo -e "\n\n---" >> $agents_file
+            echo "# Skill: $skillName" >> $agents_file
+            cat "$skillDir/SKILL.md" >> $agents_file
+          fi
         fi
       done
     fi

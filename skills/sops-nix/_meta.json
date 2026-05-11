@@ -1,0 +1,5 @@
+{
+  "name": "sops-nix",
+  "description": "Skill for managing encrypted secrets with sops-nix.",
+  "version": "1.0.0"
+}

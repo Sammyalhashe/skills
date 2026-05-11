@@ -1,0 +1,5 @@
+{
+  "name": "nix-health",
+  "description": "Skill for Nix system maintenance and disk space management.",
+  "version": "1.0.0"
+}

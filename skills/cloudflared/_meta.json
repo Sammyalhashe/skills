@@ -1,0 +1,5 @@
+{
+  "name": "cloudflared",
+  "description": "Skill for managing Cloudflare Tunnels.",
+  "version": "1.0.0"
+}

@@ -19,10 +19,20 @@
           pkgs = nixpkgs.legacyPackages.${system};
         in
         {
-          ai-skills = import ./modules/install_skills.nix {
+          local-skills = import ./modules/install_skills.nix {
             pkgs = pkgs;
             src = self;
             inherit marketplace plugin;
+          };
+
+          downloaded-skills = import ./modules/downloaded-skills.nix {
+            pkgs = pkgs;
+            inherit marketplace plugin;
+          };
+
+          ai-skills = pkgs.symlinkJoin {
+            name = "ai-skills";
+            paths = [ self.packages.${system}.local-skills self.packages.${system}.downloaded-skills ];
           };
 
           default = self.packages.${system}.ai-skills;
