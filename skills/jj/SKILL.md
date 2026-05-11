@@ -117,19 +117,16 @@ After fetching, remote bookmarks are updated but local bookmarks are not. You mu
 
 ```bash
 # Rebase the current workspace's working copy onto the latest remote bookmark
-jj rebase -s @ -d <remote>/<bookmark>
+jj git rebase -o <remote>/<bookmark>
 
 # Rebase a specific commit
 jj rebase -s <commit-id> -d <new-parent>
-
-# Rebase all local commits onto the fetched remote
-jj rebase -s '@|-root()' -d <remote>/<bookmark>
 ```
 
 Common pattern for syncing with upstream:
 ```bash
-jj git fetch --remote origin
-jj rebase -s @ -d origin/master
+jj git fetch
+jj git rebase -o main@origin
 ```
 
 ### Pushing
@@ -205,36 +202,53 @@ jj bookmark untrack <bookmark> --remote=origin
 jj bookmark delete <name>
 ```
 
-### Syncing Bookmarks After Push
+### Syncing Bookmarks Before Push
 
-When you push to a remote, jj makes the working copy commit immutable and creates a new empty working copy commit on top. To keep your bookmarks in sync with the pushed commit:
+When you push to a remote, jj makes the current working copy commit immutable and creates a new empty working copy commit on top. Before pushing, update your local bookmarks to the latest change:
 
 ```bash
-# After pushing, set your local bookmarks forward to the pushed commit
+# Update local bookmark to current change before pushing
 jj bookmark set main -r @
 jj bookmark set master -r @
 
-# Then push again (the new empty commit is pushed too)
-jj git push --bookmark main --bookmark master
+# Then push
+jj git push
 ```
 
-This pattern — set bookmarks forward, then push — is the standard way to keep bookmarks aligned with the remote after each push.
+## Standard Workflow
+
+1. `jj git fetch` — fetch upstream changes
+2. `jj status` — inspect branch state visually
+3. `jj git rebase -o main@origin` — rebase onto origin main (if needed)
+4. `jj new` — create a new change/commit
+5. `jj describe` — edit commit description (must be done before pushing)
+6. `jj bookmark set <bookmark> -r @` — update local bookmark to current change
+7. `jj git push`
 
 ## Common Workflows
 
 ### Daily Sync Workflow
 
 ```bash
-# 1. Check current status
-jj status
-
-# 2. Fetch all remotes
+# 1. Fetch upstream
 jj git fetch
 
-# 3. Rebase local work onto latest remote
-jj rebase -s @ -d origin/master
+# 2. Check status
+jj status
 
-# 4. Push changes back
+# 3. Rebase onto latest remote main
+jj git rebase -o main@origin
+
+# 4. Create new change for your work
+jj new
+
+# 5. Describe your commit
+jj describe -m "your message"
+
+# 6. Update bookmark to current change
+jj bookmark set main -r @
+
+# 7. Push
 jj git push
 ```
 
@@ -246,20 +260,25 @@ jj git fetch --remote origin
 jj git fetch --remote upstream
 
 # Rebase onto whichever you want as the target
-jj rebase -s @ -d upstream/master
+jj git rebase -o main@upstream
 ```
 
 ### Creating a New Feature Branch
 
 ```bash
-# 1. Create new change
-jj new origin/master -m "feature: start work on X"
+# 1. Fetch and rebase
+jj git fetch
+jj git rebase -o main@origin
 
-# 2. Make changes, then describe
+# 2. Create new change
+jj new
+
+# 3. Describe and make changes
 jj describe -m "feature: implement X"
 
-# 3. Push the bookmark
-jj git push --bookmark <bookmark-name>
+# 4. Update bookmark and push
+jj bookmark set feature-x -r @
+jj git push --bookmark feature-x
 ```
 
 ## Configuration
