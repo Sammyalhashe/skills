@@ -50,6 +50,14 @@ pkgs.stdenvNoCC.mkDerivation {
       done
     fi
 
+    # Create VCS instruction file for each platform
+    for platform in claude gemini openai; do
+      agentsDir="$out/$platform/agents"
+      mkdir -p "$agentsDir"
+      echo "# Primary VCS Instruction" > "$agentsDir/primary-vcs.md"
+      echo "Jujutsu (jj) should be the primary VCS for managing code repositories." >> "$agentsDir/primary-vcs.md"
+    done
+
     # Install binaries
     if [ -d bin ]; then
       for platform in claude gemini openai; do

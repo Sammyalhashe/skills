@@ -3,6 +3,7 @@ let
   # Add external GitHub skill repositories here
   externalSkills = [
     # Example: { owner = "someone"; repo = "cool-skill"; rev = "..."; sha256 = "..."; }
+    { owner = "juliusbrussee"; repo = "caveman"; rev = "main"; sha256 = "1gh70zbip4zgjj3vmd4gfvcphi6q3pnqhfh3hdgrsmlr98b5wgkx"; }
   ];
 
   fetchSkill = { owner, repo, rev, sha256 }: pkgs.fetchFromGitHub {
