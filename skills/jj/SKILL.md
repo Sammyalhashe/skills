@@ -313,3 +313,7 @@ push-remote = "origin"
 - The working copy (`@`) is always a commit — you can show it with `jj show @`
 - Use `--ignore-working-copy` flag to skip snapshotting when you know the state is clean
 - Bookmarks are the primary unit of versioning, not commits
+
+### Automatic Working Copy Commits
+
+When you push to a remote (e.g., `jj git push`), jj makes the current working copy commit immutable and creates a new empty working copy commit on top. These empty commits are normal and expected — they are jj's way of tracking the mutable working copy state. You do not need to abandon or clean them up; they are part of jj's design.
