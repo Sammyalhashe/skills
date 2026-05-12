@@ -52,3 +52,7 @@ When referencing specific files in commit messages or descriptions, use `@filena
 ## Primary VCS
 
 Jujutsu (jj) should be the primary VCS for managing code repositories. If jj is available and the repo is a jj repository, prefer jj commands over git. If the repo is git-only, use git.
+
+### Default Branch
+
+Use `master` as the default branch/bookmark if present. If the repo uses `main` instead, use `main`. Check which exists before assuming — run `jj bookmark list` or `git branch` to determine the correct name.
