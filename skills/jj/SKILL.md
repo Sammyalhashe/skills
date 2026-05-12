@@ -117,16 +117,22 @@ After fetching, remote bookmarks are updated but local bookmarks are not. You mu
 
 ```bash
 # Rebase the current workspace's working copy onto the latest remote bookmark
-jj rebase -o <remote>/<bookmark>
+jj rebase -d <remote>/<bookmark>
 
-# Rebase a specific commit
+# Rebase a specific commit and its descendants onto a new parent
 jj rebase -s <commit-id> -d <new-parent>
+
+# Rebase only a single commit (children reparented to old parent)
+jj rebase -r <commit-id> -d <new-parent>
+
+# Rebase a branch head (jj computes minimal commit set to move)
+jj rebase -b <bookmark> -d <new-parent>
 ```
 
 Common pattern for syncing with upstream:
 ```bash
 jj git fetch
-jj rebase -o main@origin
+jj rebase -d main@origin
 ```
 
 ### Pushing
@@ -170,16 +176,76 @@ jj restore --from <commit-id> --to <commit-id>
 jj revert <commit-id>
 ```
 
+## Conflict Resolution
+
+jj has first-class conflicts — unlike git, conflicted state is a valid commit. Conflicts don't block work.
+
+### How Conflicts Work
+
+- Conflicts are stored in the commit tree. You can commit, rebase, and push conflicted state.
+- `jj log` marks conflicted commits. `jj status` lists conflicted files.
+- Conflict markers use jj's diff-style format (`<<<<<<<`, `%%%%%%%`, `>>>>>>>`) showing base and both sides.
+
+### Resolving Conflicts
+
+```bash
+# List conflicted files in working copy
+jj resolve --list
+
+# Resolve via merge tool (meld, kdiff3, vimdiff, etc.)
+jj resolve [file]
+
+# Resolve conflicts in a specific revision
+jj resolve -r <revision>
+
+# Pick one side entirely
+jj restore --from <commit> <path>
+```
+
+You can also edit conflicted files directly — remove conflict markers, save, and jj auto-snapshots the resolution.
+
+### Conflicts During Rebase
+
+jj does NOT stop on conflicts during rebase. It records the conflict in the rebased commit and continues. To resolve:
+
+1. Use `jj edit <conflicted-rev>` to jump to the conflicted commit.
+2. Resolve the conflict (edit files or use `jj resolve`).
+3. Use `jj new` to return to working on the tip.
+
+Resolving a conflicted ancestor automatically propagates the resolution to descendants, often clearing their conflicts too.
+
+### When to Defer vs Resolve
+
+**Defer when:**
+- Conflict is in a file unrelated to current work.
+- You want to keep fetching/rebasing without interruption.
+- You're mid-stack and want to finish other changes first.
+
+**Resolve when:**
+- About to push (forges reject conflict markers).
+- Downstream commits depend on the conflicted file.
+- You need to verify the code compiles or passes tests.
+
 ### Squash and Split
 
 ```bash
-# Move changes from one revision into another
-jj squash -s <source> -d <dest>
+# Squash working copy into its parent
+jj squash
+
+# Squash a specific revision into its parent
+jj squash --from <rev>
+
+# Squash into a non-adjacent commit
+jj squash --from <source> --into <dest>
+
+# Interactive squash — select which hunks to move
+jj squash -i
 
 # Split a revision into two via interactive editor
 jj split
 
-# Move changes from a revision into its parents
+# Automatically distribute working copy changes into ancestor commits
+# based on which ancestor originally touched each line
 jj absorb
 ```
 
@@ -189,7 +255,10 @@ jj absorb
 # List bookmarks
 jj bookmark list
 
-# Create or move a bookmark to a commit
+# Create a new bookmark (errors if it already exists — safe)
+jj bookmark create <name> [-r <commit>]
+
+# Create or move a bookmark to a commit (overwrites if exists — use with care)
 jj bookmark set <name> [-r <commit>]
 
 # Track a remote bookmark (creates local tracking bookmark)
@@ -219,7 +288,7 @@ jj git push
 
 1. `jj git fetch` — fetch upstream changes
 2. `jj status` — inspect branch state visually
-3. `jj git rebase -o main@origin` — rebase onto origin main (if needed)
+3. `jj rebase -d main@origin` — rebase onto origin main (if needed)
 4. `jj new` — create a new change/commit
 5. `jj describe` — edit commit description (must be done before pushing)
 6. `jj bookmark set <bookmark> -r @` — update local bookmark to current change
@@ -237,7 +306,7 @@ jj git fetch
 jj status
 
 # 3. Rebase onto latest remote main
-jj git rebase -o main@origin
+jj rebase -d main@origin
 
 # 4. Create new change for your work
 jj new
@@ -260,7 +329,7 @@ jj git fetch --remote origin
 jj git fetch --remote upstream
 
 # Rebase onto whichever you want as the target
-jj git rebase -o main@upstream
+jj rebase -d main@upstream
 ```
 
 ### Creating a New Feature Branch
@@ -268,7 +337,7 @@ jj git rebase -o main@upstream
 ```bash
 # 1. Fetch and rebase
 jj git fetch
-jj git rebase -o main@origin
+jj rebase -d main@origin
 
 # 2. Create new change
 jj new
@@ -340,13 +409,38 @@ push = "bookmark"
 push-remote = "origin"
 ```
 
+## Recovery
+
+jj operations are non-destructive. Every operation is logged and reversible.
+
+```bash
+# View operation history
+jj op log
+
+# Undo the last operation
+jj op undo
+
+# Restore repo to a specific operation
+jj op restore <operation-id>
+```
+
+This means rebase, squash, abandon — all safely undoable.
+
+## Common Mistakes
+
+- **Pushing without a bookmark:** results in "nothing to push." Always `jj bookmark set <name> -r @` before `jj git push`.
+- **Pushing undescribed/empty working copy:** remote rejects it. Describe commits before pushing.
+- **Assuming `jj git fetch` moves local bookmarks:** it only updates `<bookmark>@<remote>`. You must rebase or manually set your local bookmark.
+- **Using `bookmark set` when you meant `bookmark create`:** `set` silently overwrites existing bookmarks. Use `create` for new bookmarks to get an error if it already exists.
+- **Forgetting to fetch before rebase:** causes stale parent references. Always `jj git fetch` first.
+
 ### Tips
 
-- Use `jj help <command>` for detailed help on any command
-- Use `jj log --graph` for a visual revision graph
-- The working copy (`@`) is always a commit — you can show it with `jj show @`
-- Use `--ignore-working-copy` flag to skip snapshotting when you know the state is clean
-- Bookmarks are the primary unit of versioning, not commits
+- Use `jj help <command>` for detailed help on any command.
+- Use `jj log --graph` for a visual revision graph.
+- The working copy (`@`) is always a commit — show it with `jj show @`.
+- Use `--ignore-working-copy` flag to skip snapshotting when state is clean.
+- Bookmarks are the primary unit of versioning, not commits.
 
 ### Automatic Working Copy Commits
 
