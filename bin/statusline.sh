@@ -1,26 +1,19 @@
 #!/usr/bin/env bash
-# status-line.sh — interactive statusline + context-usage writer.
+# status-line.sh — interactive statusline for Claude Code.
 #
 # Registered as `statusLine.command` in settings.json. Claude pipes a JSON
 # payload describing the session on stdin; the first line we print on stdout
 # becomes the visible statusline.
-#
-# Side effect: forwards the payload to ctx-usage.sh so the shared usage file
-# stays current. Other hooks (context-ceiling, anything else) read that file.
 #
 # Display: "<host>: <model> <tokens> (<percent>%) | <project>:<branch>"
 # Color of the percent reflects threshold bands.
 
 set -u
 
-HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 THRESHOLD="${CLAUDE_CONTEXT_THRESHOLD:-75}"
 CRITICAL="${CLAUDE_CONTEXT_CRITICAL:-90}"
 
-# Read once, hand to ctx-usage to update the shared file (which echoes input
-# back so we can keep parsing it ourselves).
 INPUT="$(cat)"
-printf '%s' "$INPUT" | "$HOOK_DIR/ctx-usage.sh" update >/dev/null
 
 model=$(printf '%s' "$INPUT" | jq -r '.model.display_name // "Claude"')
 window=$(printf '%s' "$INPUT" | jq -r '.context_window.context_window_size // 200000')
