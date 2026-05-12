@@ -1,6 +1,8 @@
 ---
 name: jj
 description: This skill should be used when the user asks about jj (jujutsu), wants to work with a jj repo, mentions jj commands like describe/new/fetch/rebase/push, or needs help with jj workflows. Use proactively whenever the user mentions jj, jujutsu, or working with a jj repository. Make sure to use this skill whenever the user mentions jj, jujutsu, or wants to do any version control work in a jj repo.
+effort: low
+context: inline
 ---
 
 # Jujutsu (jj) VCS Skill

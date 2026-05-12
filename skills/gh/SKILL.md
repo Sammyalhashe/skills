@@ -1,6 +1,8 @@
 ---
 name: gh
 description: This skill should be used when the user asks about gh (GitHub CLI), wants to work with GitHub repos, mentions gh commands like auth/repo/pr/issue, or needs help with GitHub workflows. Use proactively whenever the user mentions GitHub, PRs, issues, forks, or any GitHub-related task. Make sure to use this skill whenever the user mentions gh, GitHub CLI, or wants to do any GitHub work from the command line.
+effort: low
+context: fork
 ---
 
 # GitHub CLI (gh) Skill

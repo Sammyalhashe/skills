@@ -1,6 +1,8 @@
 ---
 name: cloudflared
 description: Use this skill when managing Cloudflare Tunnels (Argo Tunnels), checking tunnel status, or configuring new ingress rules. It replaces older Wireguard/VPN skills for remote access.
+effort: medium
+context: inline
 ---
 
 # Cloudflared (Cloudflare Tunnels) Skill

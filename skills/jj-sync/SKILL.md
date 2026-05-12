@@ -1,6 +1,8 @@
 ---
 name: jj-sync
 description: Use this skill to safely sync Jujutsu (jj) repositories. It ensures changes are described, bookmarks are set, and pushes are only attempted on valid commits.
+effort: low
+context: inline
 ---
 
 # Jujutsu (jj) Sync Skill

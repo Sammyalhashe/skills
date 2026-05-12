@@ -81,6 +81,12 @@ Use `master` as the default branch/bookmark if present. If the repo uses `main` 
 - Investigate unexpected state (unfamiliar files, branches, lock files) before deleting or overwriting.
 - For irreversible actions, drop caveman mode and state the consequences clearly before proceeding.
 
+## Skill Customizations
+
+- User customizations live at `~/.claude/customizations/<skill-name>.md` and override skill defaults.
+- These files are user-created, not Nix-managed. They survive rebuilds.
+- Before applying a skill, check if a customization file exists for it. If so, load it and let its directives take precedence.
+
 ## Research & Exploration
 
 - Use subagents for independent parallel research — spawn them in a single message so they run concurrently.

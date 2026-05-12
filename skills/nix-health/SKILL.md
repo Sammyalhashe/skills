@@ -1,6 +1,8 @@
 ---
 name: nix-health
 description: Use this skill when the system is low on disk space, the bootloader is full, or when performing general Nix maintenance. It covers garbage collection, store verification, and boot partition management.
+effort: medium
+context: inline
 ---
 
 # Nix Health & Maintenance Skill

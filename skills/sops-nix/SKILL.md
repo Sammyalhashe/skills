@@ -1,6 +1,8 @@
 ---
 name: sops-nix
 description: Use this skill when managing encrypted secrets, editing secrets.yaml files, or troubleshooting sops-nix issues. It provides guidance on safe secret management and common sops commands.
+effort: medium
+context: inline
 ---
 
 # sops-nix Skill
