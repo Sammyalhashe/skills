@@ -56,3 +56,33 @@ Jujutsu (jj) should be the primary VCS for managing code repositories. If jj is 
 ### Default Branch
 
 Use `master` as the default branch/bookmark if present. If the repo uses `main` instead, use `main`. Check which exists before assuming — run `jj bookmark list` or `git branch` to determine the correct name.
+
+## Token Efficiency
+
+- Prefer caveman mode for communication — it cuts token usage significantly while preserving technical substance.
+- Use cavecrew subagents (investigator, builder, reviewer) for multi-file tasks. Their compressed output saves ~60% context vs inline work.
+- For codebase exploration spanning more than 3 queries, use a subagent instead of inline sequential searches.
+- Don't duplicate work — if a subagent is researching a topic, don't run the same searches inline.
+
+## Work Style
+
+- Make only the changes requested. No speculative refactoring, no premature abstractions, no cleanup beyond scope.
+- Don't add comments unless the WHY is non-obvious. Never explain WHAT code does — well-named identifiers do that.
+- Prefer editing existing files over creating new ones.
+- No documentation files (README, *.md) unless explicitly requested.
+- Three similar lines is better than a premature abstraction. Don't design for hypothetical futures.
+- Don't add error handling or validation for scenarios that can't happen. Trust internal code. Only validate at system boundaries.
+
+## Safety
+
+- Never run destructive operations (force push, reset --hard, rm -rf, drop table) without explicit user confirmation.
+- Never skip pre-commit hooks or verification steps (no --no-verify, no --no-gpg-sign).
+- Check for uncommitted work before overwriting anything.
+- Investigate unexpected state (unfamiliar files, branches, lock files) before deleting or overwriting.
+- For irreversible actions, drop caveman mode and state the consequences clearly before proceeding.
+
+## Research & Exploration
+
+- Use subagents for independent parallel research — spawn them in a single message so they run concurrently.
+- Don't guess file locations or symbol names. Search first, then act.
+- When multiple valid approaches exist, present them briefly and let the user choose. Don't pick one silently.
