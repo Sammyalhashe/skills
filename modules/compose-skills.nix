@@ -55,6 +55,14 @@ pkgs.stdenvNoCC.mkDerivation {
           agentName=$(basename "$agentDir")
           agent_routing="$agent_routing| $agentName | @agents/$agentName/AGENT.md |
 "
+          companions_line=$(grep "^companions:" "$agentDir/AGENT.md" 2>/dev/null || true)
+          if [ -n "$companions_line" ]; then
+            companions=$(echo "$companions_line" | sed 's/^companions:[[:space:]]*//' | tr -d ' \r')
+            for companion in $(echo "$companions" | tr ',' ' '); do
+              agent_routing="$agent_routing| $agentName + $companion | @agents/$agentName/AGENT.md @agents/$companion/AGENT.md |
+"
+            done
+          fi
         fi
       done
     '') agents);

@@ -31,6 +31,7 @@ packages.${system}.agent-algorithm-alex       # DS&A and competitive programming
 packages.${system}.agent-api-alice            # Library & API design architect
 packages.${system}.agent-nix-ninja            # Nix/NixOS ecosystem specialist
 packages.${system}.agent-devils-advocate-dave # Adversarial design reviewer
+packages.${system}.agent-fullstack-felix      # TypeScript/JavaScript full-stack expert
 ```
 
 ### Rules
@@ -172,6 +173,7 @@ claude/
   jj/SKILL.md                      → loaded on-demand when jj topic arises
   gh/SKILL.md                      → loaded on-demand when gh topic arises
   agents/neckbeard-nate/AGENT.md   → loaded when C++ perf expertise needed
+  agents/fullstack-felix/AGENT.md  → loaded when TypeScript/JS expertise needed
   agents/planning-paul/AGENT.md    → loaded when task decomposition needed
   ...
 gemini/
@@ -234,6 +236,7 @@ skills/                      # Local skill definitions (procedures)
   ...
 agents/                      # Agent persona definitions
   neckbeard-nate/AGENT.md
+  fullstack-felix/AGENT.md
   planning-paul/AGENT.md
   ...
 rules/                       # Global agent rules
