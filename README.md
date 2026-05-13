@@ -144,6 +144,30 @@ in compose {
 }
 ```
 
+## Architecture
+
+The composed output follows a context-efficient design:
+
+```
+claude/
+  CLAUDE.md          → @AGENTS.md (thin shim)
+  AGENTS.md          → global rules + routing table (no skill content)
+  jj/SKILL.md        → loaded on-demand when jj topic arises
+  gh/SKILL.md        → loaded on-demand when gh topic arises
+  ...
+gemini/
+  GEMINI.md          → @AGENTS.md
+  AGENTS.md          → same structure
+  ...
+openai/
+  OPENAI.md          → @AGENTS.md
+  ...
+```
+
+- **`AGENTS.md`** is the single source of truth: global rules + a routing table pointing to individual skills
+- **`CLAUDE.md`** / **`GEMINI.md`** / **`OPENAI.md`** are platform shims that just import `@AGENTS.md`
+- **Skill content is never concatenated** into AGENTS.md — each `SKILL.md` is loaded on-demand via `@skill-name/SKILL.md` when relevant, keeping the base context window small (~175 lines vs ~1300+)
+
 ## Adding Skills
 
 Place a new directory under `skills/` with at minimum:
