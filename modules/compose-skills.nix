@@ -22,12 +22,6 @@ pkgs.stdenvNoCC.mkDerivation {
               skillName=$(basename "$skillDir")
               mkdir -p "$out/$platform/$skillName"
               cp -r "$skillDir/." "$out/$platform/$skillName/"
-
-              if [ -f "$skillDir/SKILL.md" ]; then
-                echo -e "\n\n---" >> "$out/$platform/AGENTS.md"
-                echo "# Skill: $skillName" >> "$out/$platform/AGENTS.md"
-                cat "$skillDir/SKILL.md" >> "$out/$platform/AGENTS.md"
-              fi
             fi
           done
         fi
@@ -63,69 +57,54 @@ pkgs.stdenvNoCC.mkDerivation {
   in ''
     mkdir -p $out/claude $out/gemini $out/openai
 
-    # Start AGENTS.md — copy from rules package or create header
+    # Build routing table from installed skills
+    ${skillInstalls}
+    routing_table=""
+    ${routingInstalls}
+
+    # Generate AGENTS.md: global rules + routing table (no skill content)
     for platform in claude gemini openai; do
       agents_file="$out/$platform/AGENTS.md"
+
+      # Start with global rules
       if [ -n "${rulesFlag}" ] && [ -f "${rulesFlag}/$platform/AGENTS.md" ]; then
         cat "${rulesFlag}/$platform/AGENTS.md" > "$agents_file"
       else
         echo "# AI Agents Skills & Instructions" > "$agents_file"
         echo "" >> "$agents_file"
-        echo "This file contains consolidated skill instructions for the $platform platform." >> "$agents_file"
       fi
-    done
 
-    # Install skills and append to AGENTS.md
-    ${skillInstalls}
+      # Append routing table
+      cat >> "$agents_file" << ROUTINGEOF
 
-    # Build routing table
-    routing_table=""
-    ${routingInstalls}
 
-    # Generate platform entrypoints
-    cat > $out/claude/CLAUDE.md << ENTRYEOF
-# Claude Code Instructions
-
-All agent rules and skill instructions are defined in @AGENTS.md — follow them.
+---
 
 ## Context Routing
 
-When a topic arises, load the relevant skill file directly — don't rely solely on the AGENTS.md summary.
+When a topic arises, load the relevant skill file directly.
 
 | Topic | Path |
 |-------|------|
-| Global rules | @AGENTS.md (top section) |
 $routing_table
 
 ## Customizations
 
 User overrides live at \`~/.claude/customizations/<skill-name>.md\`. Check before applying a skill.
+ROUTINGEOF
+    done
+
+    # Platform entrypoints — thin shims that reference AGENTS.md
+    cat > $out/claude/CLAUDE.md << 'ENTRYEOF'
+@AGENTS.md
 ENTRYEOF
 
-    cat > $out/gemini/GEMINI.md << ENTRYEOF
-# Gemini Instructions
-
-All agent rules and skill instructions are defined in @AGENTS.md — follow them.
-
-## Context Routing
-
-| Topic | Path |
-|-------|------|
-| Global rules | @AGENTS.md (top section) |
-$routing_table
+    cat > $out/gemini/GEMINI.md << 'ENTRYEOF'
+@AGENTS.md
 ENTRYEOF
 
-    cat > $out/openai/OPENAI.md << ENTRYEOF
-# OpenAI Instructions
-
-All agent rules and skill instructions are defined in @AGENTS.md — follow them.
-
-## Context Routing
-
-| Topic | Path |
-|-------|------|
-| Global rules | @AGENTS.md (top section) |
-$routing_table
+    cat > $out/openai/OPENAI.md << 'ENTRYEOF'
+@AGENTS.md
 ENTRYEOF
 
     # Install bin/ and hooks/
