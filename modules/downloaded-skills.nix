@@ -1,42 +1,51 @@
 { pkgs, marketplace, plugin }:
+
 let
-  # Add external GitHub skill repositories here
+  buildSkill = import ./build-skill.nix;
+
   externalSkills = [
-    # Example: { owner = "someone"; repo = "cool-skill"; rev = "..."; sha256 = "..."; }
-    { owner = "juliusbrussee"; repo = "caveman"; rev = "main"; sha256 = "1gh70zbip4zgjj3vmd4gfvcphi6q3pnqhfh3hdgrsmlr98b5wgkx"; }
+    { owner = "juliusbrussee"; repo = "caveman"; rev = "main"; sha256 = "0qhqzqibbjfmwj7v9nqqw6a1ijbbmnhchgpclivhr88gcfrxlmr6"; skillType = "single"; }
   ];
 
   fetchSkill = { owner, repo, rev, sha256 }: pkgs.fetchFromGitHub {
     inherit owner repo rev sha256;
   };
 
-  downloadedPaths = map fetchSkill externalSkills;
+  # skillType: "single" = repo root is the skill, "multi" = skills/ subdir with skillNames list
+  buildExternalSkillPackages = { owner, repo, rev, sha256, skillType ? "single", skillNames ? [] }:
+    let
+      src = fetchSkill { inherit owner repo rev sha256; };
+    in
+    if skillType == "multi" then
+      map (name: {
+        inherit name;
+        drv = buildSkill {
+          inherit pkgs;
+          skillName = name;
+          skillSrc = "${src}/skills/${name}";
+        };
+      }) skillNames
+    else
+      [{
+        name = repo;
+        drv = buildSkill {
+          inherit pkgs;
+          skillName = repo;
+          skillSrc = src;
+        };
+      }];
+
+  allExternalSkills = builtins.concatLists (map buildExternalSkillPackages externalSkills);
+
+  individualSkills = builtins.listToAttrs (
+    map (s: { name = s.name; value = s.drv; }) allExternalSkills
+  );
+
+  aggregate = pkgs.symlinkJoin {
+    name = "downloaded-skills";
+    paths = map (s: s.drv) allExternalSkills;
+  };
 in
-pkgs.stdenvNoCC.mkDerivation {
-  name = "downloaded-skills";
-  
-  # This derivation doesn't have a single source, it aggregates fetched ones
-  phases = [ "installPhase" ];
-
-  installPhase = ''
-    mkdir -p $out/claude
-    mkdir -p $out/gemini
-    mkdir -p $out/openai
-
-    ${pkgs.lib.concatStringsSep "\n" (map (path: ''
-      # Copy skills from each downloaded repo
-      if [ -d "${path}/skills" ]; then
-        cp -r ${path}/skills/* $out/claude/ 2>/dev/null || true
-        cp -r ${path}/skills/* $out/gemini/ 2>/dev/null || true
-        cp -r ${path}/skills/* $out/openai/ 2>/dev/null || true
-      elif [ -f "${path}/SKILL.md" ]; then
-        # If the repo itself is a single skill
-        skillName=$(basename ${path})
-        mkdir -p $out/claude/$skillName $out/gemini/$skillName $out/openai/$skillName
-        cp -r ${path}/* $out/claude/$skillName/
-        cp -r ${path}/* $out/gemini/$skillName/
-        cp -r ${path}/* $out/openai/$skillName/
-      fi
-    '') downloadedPaths)}
-  '';
+{
+  inherit aggregate individualSkills;
 }

@@ -1,21 +1,50 @@
-{ marketplace, plugin }:
+{ marketplace, plugin, skillsFlake }:
 { pkgs, lib, config, ... }:
 
 let
   cfg = config.ai-skills;
+  system = pkgs.stdenv.hostPlatform.system;
+  composeSkills = import ./compose-skills.nix { inherit pkgs; };
+
+  effectivePackage =
+    if cfg.selectedSkills == [] then
+      cfg.package
+    else
+      composeSkills {
+        skills = cfg.selectedSkills;
+        rules = cfg.rules;
+        name = "ai-skills-selected";
+      };
 in
 {
   options = {
     ai-skills.enable = lib.mkEnableOption "Install AI skills and agents";
+
     ai-skills.package = lib.mkOption {
       type = lib.types.package;
-      description = "The AI skills package to install";
+      default = skillsFlake.packages.${system}.ai-skills;
+      description = "The full AI skills package (used when selectedSkills is empty)";
+    };
+
+    ai-skills.selectedSkills = lib.mkOption {
+      type = lib.types.listOf lib.types.package;
+      default = [];
+      description = ''
+        List of individual skill packages to install. When non-empty,
+        composes only these skills into the output instead of the full package.
+      '';
+    };
+
+    ai-skills.rules = lib.mkOption {
+      type = lib.types.nullOr lib.types.package;
+      default = skillsFlake.packages.${system}.rules;
+      description = "Rules package to include in the composed bundle.";
     };
   };
 
   config = lib.mkIf cfg.enable {
     home.file.".claude/skills" = {
-      source = "${cfg.package}/claude";
+      source = "${effectivePackage}/claude";
       recursive = true;
     };
   };
