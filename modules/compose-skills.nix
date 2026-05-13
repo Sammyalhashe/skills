@@ -1,6 +1,7 @@
 { pkgs }:
 
 { skills ? []
+, agents ? []
 , rules ? null
 , binSrc ? null
 , hooksSrc ? null
@@ -14,6 +15,7 @@ pkgs.stdenvNoCC.mkDerivation {
 
   installPhase = let
     rulesFlag = if rules != null then rules else "";
+
     skillInstalls = pkgs.lib.concatStringsSep "\n" (map (skillPkg: ''
       for platform in claude gemini openai; do
         if [ -d "${skillPkg}/$platform" ]; then
@@ -28,15 +30,34 @@ pkgs.stdenvNoCC.mkDerivation {
       done
     '') skills);
 
-    routingInstalls = pkgs.lib.concatStringsSep "\n" (map (skillPkg: ''
+    skillRouting = pkgs.lib.concatStringsSep "\n" (map (skillPkg: ''
       for skillDir in ${skillPkg}/claude/*/; do
         if [ -d "$skillDir" ] && [ -f "$skillDir/SKILL.md" ]; then
           skillName=$(basename "$skillDir")
-          routing_table="$routing_table| $skillName | @$skillName/SKILL.md |
+          skill_routing="$skill_routing| $skillName | @$skillName/SKILL.md |
 "
         fi
       done
     '') skills);
+
+    agentInstalls = pkgs.lib.concatStringsSep "\n" (map (agentPkg: ''
+      for platform in claude gemini openai; do
+        if [ -d "${agentPkg}/$platform/agents" ]; then
+          mkdir -p "$out/$platform/agents"
+          cp -r "${agentPkg}/$platform/agents/." "$out/$platform/agents/"
+        fi
+      done
+    '') agents);
+
+    agentRouting = pkgs.lib.concatStringsSep "\n" (map (agentPkg: ''
+      for agentDir in ${agentPkg}/claude/agents/*/; do
+        if [ -d "$agentDir" ] && [ -f "$agentDir/AGENT.md" ]; then
+          agentName=$(basename "$agentDir")
+          agent_routing="$agent_routing| $agentName | @agents/$agentName/AGENT.md |
+"
+        fi
+      done
+    '') agents);
 
     binInstall = if binSrc != null then ''
       for platform in claude gemini openai; do
@@ -57,12 +78,17 @@ pkgs.stdenvNoCC.mkDerivation {
   in ''
     mkdir -p $out/claude $out/gemini $out/openai
 
-    # Build routing table from installed skills
+    # Install skills and agents
     ${skillInstalls}
-    routing_table=""
-    ${routingInstalls}
+    ${agentInstalls}
 
-    # Generate AGENTS.md: global rules + routing table (no skill content)
+    # Build routing tables
+    skill_routing=""
+    ${skillRouting}
+    agent_routing=""
+    ${agentRouting}
+
+    # Generate AGENTS.md: global rules + routing tables
     for platform in claude gemini openai; do
       agents_file="$out/$platform/AGENTS.md"
 
@@ -74,7 +100,7 @@ pkgs.stdenvNoCC.mkDerivation {
         echo "" >> "$agents_file"
       fi
 
-      # Append routing table
+      # Append routing tables
       cat >> "$agents_file" << ROUTINGEOF
 
 
@@ -82,11 +108,21 @@ pkgs.stdenvNoCC.mkDerivation {
 
 ## Context Routing
 
-When a topic arises, load the relevant skill file directly.
+When a topic arises, load the relevant skill or agent file directly.
+
+### Skills
 
 | Topic | Path |
 |-------|------|
-$routing_table
+$skill_routing
+
+### Agent Personas
+
+When asked to adopt a persona, or when the task matches an agent's expertise, load their profile.
+
+| Agent | Path |
+|-------|------|
+$agent_routing
 
 ## Customizations
 

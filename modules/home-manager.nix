@@ -7,11 +7,12 @@ let
   composeSkills = import ./compose-skills.nix { inherit pkgs; };
 
   effectivePackage =
-    if cfg.selectedSkills == [] then
+    if cfg.selectedSkills == [] && cfg.selectedAgents == [] then
       cfg.package
     else
       composeSkills {
         skills = cfg.selectedSkills;
+        agents = cfg.selectedAgents;
         rules = cfg.rules;
         name = "ai-skills-selected";
       };
@@ -23,7 +24,7 @@ in
     ai-skills.package = lib.mkOption {
       type = lib.types.package;
       default = skillsFlake.packages.${system}.ai-skills;
-      description = "The full AI skills package (used when selectedSkills is empty)";
+      description = "The full AI skills package (used when no selections are made)";
     };
 
     ai-skills.selectedSkills = lib.mkOption {
@@ -32,6 +33,15 @@ in
       description = ''
         List of individual skill packages to install. When non-empty,
         composes only these skills into the output instead of the full package.
+      '';
+    };
+
+    ai-skills.selectedAgents = lib.mkOption {
+      type = lib.types.listOf lib.types.package;
+      default = [];
+      description = ''
+        List of individual agent persona packages to install. When non-empty
+        (along with selectedSkills), composes only these into the output.
       '';
     };
 

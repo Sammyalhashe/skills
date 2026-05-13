@@ -14,11 +14,17 @@
       plugin = "skills";
 
       buildSkill = import ./modules/build-skill.nix;
+      buildAgent = import ./modules/build-agent.nix;
       buildRules = import ./modules/build-rules.nix;
 
       localSkillNames = builtins.attrNames (
         nixpkgs.lib.filterAttrs (_: type: type == "directory")
           (builtins.readDir ./skills)
+      );
+
+      localAgentNames = builtins.attrNames (
+        nixpkgs.lib.filterAttrs (_: type: type == "directory")
+          (builtins.readDir ./agents)
       );
     in
     {
@@ -38,6 +44,17 @@
             }) localSkillNames
           );
 
+          localAgentPackages = builtins.listToAttrs (
+            map (name: {
+              inherit name;
+              value = buildAgent {
+                inherit pkgs;
+                agentName = name;
+                agentSrc = ./agents/${name};
+              };
+            }) localAgentNames
+          );
+
           rulesPackage = buildRules {
             inherit pkgs;
             rulesSrc = ./rules;
@@ -49,6 +66,7 @@
 
           localSkillsComposed = composeSkills {
             skills = builtins.attrValues localSkillPackages;
+            agents = builtins.attrValues localAgentPackages;
             rules = rulesPackage;
             binSrc = ./bin;
             hooksSrc = ./hooks;
@@ -58,8 +76,12 @@
           skillOutputs = nixpkgs.lib.mapAttrs'
             (name: drv: { name = "skill-${name}"; value = drv; })
             (localSkillPackages // downloadedResult.individualSkills);
+
+          agentOutputs = nixpkgs.lib.mapAttrs'
+            (name: drv: { name = "agent-${name}"; value = drv; })
+            localAgentPackages;
         in
-        skillOutputs // {
+        skillOutputs // agentOutputs // {
           rules = rulesPackage;
 
           local-skills = localSkillsComposed;
