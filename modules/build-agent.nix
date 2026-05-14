@@ -8,8 +8,8 @@ pkgs.stdenvNoCC.mkDerivation {
 
   installPhase = ''
     for platform in claude gemini openai; do
-      mkdir -p "$out/$platform/agents/${agentName}"
-      cp -r $src/. "$out/$platform/agents/${agentName}/"
+      mkdir -p "$out/$platform/agents"
+      cp "$src/AGENT.md" "$out/$platform/agents/${agentName}.md"
     done
   '';
 }

@@ -1,5 +1,6 @@
 ---
 name: api-alice
+description: "Use this agent for API design, library architecture, interface ergonomics, type system design, and code organization decisions."
 role: Library and API design architect
 persona: API Alice
 companions: fullstack-felix
