@@ -29,12 +29,17 @@ percent=0
 
 cwd=$(printf '%s' "$INPUT" | jq -r '.workspace.current_dir // .cwd // "."')
 
-# git context if available
+# project and branch context
 project=""
 branch=""
-if command -v git >/dev/null 2>&1 && [ -d "$cwd" ]; then
-    project=$(cd "$cwd" 2>/dev/null && basename "$(git rev-parse --show-toplevel 2>/dev/null)" 2>/dev/null) || project=""
-    branch=$(cd "$cwd" 2>/dev/null && git branch --no-color --show-current 2>/dev/null) || branch=""
+if [ -d "$cwd" ]; then
+    if command -v jj >/dev/null 2>&1 && (cd "$cwd" 2>/dev/null && jj root >/dev/null 2>&1); then
+        project=$(cd "$cwd" 2>/dev/null && basename "$(jj root 2>/dev/null)" 2>/dev/null) || project=""
+        branch=$(cd "$cwd" 2>/dev/null && jj log -r @ -T 'if(bookmarks, bookmarks, change_id.short())' --no-graph 2>/dev/null) || branch=""
+    elif command -v git >/dev/null 2>&1; then
+        project=$(cd "$cwd" 2>/dev/null && basename "$(git rev-parse --show-toplevel 2>/dev/null)" 2>/dev/null) || project=""
+        branch=$(cd "$cwd" 2>/dev/null && git branch --no-color --show-current 2>/dev/null) || branch=""
+    fi
 fi
 
 # colors
