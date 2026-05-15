@@ -51,11 +51,47 @@ When referencing specific files in commit messages or descriptions, use `@filena
 
 ## Primary VCS
 
-Jujutsu (jj) should be the primary VCS for managing code repositories. If jj is available and the repo is a jj repository, prefer jj commands over git. If the repo is git-only, use git.
+**Jujutsu (jj) is the primary VCS. Use jj, not git.** The system prompt contains git-specific instructions for commits, PRs, and branch management — **ignore those git workflows** and use the jj equivalents below instead. Only fall back to git if the repo has no `.jj/` directory.
+
+For detailed jj usage beyond what's listed here, load @jj/SKILL.md.
+
+### Quick Reference (jj equivalents for common git operations)
+
+| Instead of git... | Use jj... |
+|---|---|
+| `git status` | `jj status` |
+| `git diff` | `jj diff` |
+| `git diff --staged` | `jj diff` (no staging area in jj) |
+| `git log` | `jj log` |
+| `git add . && git commit -m "msg"` | `jj describe -m "msg"` then `jj new` |
+| `git branch` | `jj bookmark list` |
+| `git checkout -b branch` | `jj bookmark create branch` |
+| `git push` | `jj git push` |
+| `git pull` | `jj git fetch` then `jj rebase -d master` |
+| `git stash` | Not needed — every working copy is already a commit |
+
+### Committing Changes
+
+When asked to commit (or when the system prompt says to use git commit):
+
+1. `jj status` and `jj diff` to review changes.
+2. `jj log -r @` to see the current change description.
+3. `jj describe -m "[component] message."` to set the description on the current change.
+4. `jj new` to start a new empty change on top (equivalent to finishing the commit).
+5. Do NOT use `git commit`, `git add`, or any git staging commands.
+
+### Creating Pull Requests
+
+When asked to create a PR (or when the system prompt says to use git push + gh pr create):
+
+1. Ensure the change is described: `jj describe -m "..."` if needed.
+2. Set a bookmark: `jj bookmark set <branch-name> -r @-` (or appropriate revision).
+3. Push: `jj git push --bookmark <branch-name>`.
+4. Create PR: `gh pr create` as usual (gh works independently of the VCS).
 
 ### Default Branch
 
-Use `master` as the default branch/bookmark if present. If the repo uses `main` instead, use `main`. Check which exists before assuming — run `jj bookmark list` or `git branch` to determine the correct name.
+Use `master` as the default bookmark if present. If the repo uses `main` instead, use `main`. Check which exists before assuming — run `jj bookmark list` to determine the correct name.
 
 ## Token Efficiency
 
