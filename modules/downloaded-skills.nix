@@ -4,7 +4,7 @@ let
   buildSkill = import ./build-skill.nix;
 
   externalSkills = [
-    { owner = "juliusbrussee"; repo = "caveman"; rev = "main"; sha256 = "14i2vxkddimy7kvwpfa3bbd3q59asgjbb9mm2d67r8pr0bwccq7x"; skillType = "single"; }
+    { owner = "juliusbrussee"; repo = "caveman"; rev = "655b7d9c5431f822264b7732e9901c5578ac84cf"; sha256 = "sha256-BydREt/vai3j7kO5+e1OxsjXf6Vy+jSY1yA/yyxjHbI="; skillType = "single"; }
   ];
 
   fetchSkill = { owner, repo, rev, sha256 }: pkgs.fetchFromGitHub {
