@@ -13,6 +13,17 @@ context: inline
 
 If `.jj/` exists in the project root, this is a jj-managed repository. Use `jj` commands exclusively. Raw `git` commands can corrupt jj's internal state.
 
+### Integrate with rebase, never merge
+
+When you DO integrate divergent work (upstream moved, or reconciling two lines of work), **rebase — never create a merge commit.** Keep history linear.
+
+- Correct: `jj rebase -d main@origin` — moves your commits on top of upstream.
+- Avoid: merge commits via `jj new <your-work> main@origin`.
+
+Linear history is easier to review, bisect, and push as a PR; jj is rebase-first, so merges are almost never needed for feature work. (This governs *how* to integrate — see the Fetch/Rebase Policy below for *when*.)
+
+If raw git is ever unavoidable in a non-jj repo, use `git rebase` / `git pull --rebase` (or set `git config pull.rebase true`), never `git merge`.
+
 ### Fetch/Rebase Policy
 
 **DO NOT fetch or rebase unless the user explicitly asks or the task requires upstream changes.**
@@ -231,6 +242,7 @@ After resolving a conflict in an ancestor, descendants often auto-resolve too.
 | Mistake | Consequence | Fix |
 |---------|-------------|-----|
 | Reflexive fetch+rebase | Overwrites local changes with conflicts | Only sync when needed |
+| Merging instead of rebasing | Non-linear, messy history | `jj rebase -d <target>` |
 | Using raw git in a jj repo | Corrupts jj state | Always use jj commands |
 | Pushing without bookmark | "Nothing to push" | `jj bookmark set <name> -r @` first |
 | Pushing empty/undescribed commit | Remote rejects it | `jj describe -m "..."` first |
