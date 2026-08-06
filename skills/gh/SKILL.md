@@ -1,6 +1,6 @@
 ---
 name: gh
-description: This skill should be used when the user asks about gh (GitHub CLI), wants to work with GitHub repos, mentions gh commands like auth/repo/pr/issue, or needs help with GitHub workflows. Use proactively whenever the user mentions GitHub, PRs, issues, forks, or any GitHub-related task. Make sure to use this skill whenever the user mentions gh, GitHub CLI, or wants to do any GitHub work from the command line.
+description: Command-line GitHub workflows via the `gh` CLI - auth, repos, pull requests, issues, releases, and Actions. Use when the user mentions gh, GitHub CLI, PRs, issues, forks, or wants to do GitHub work from the terminal.
 effort: low
 context: fork
 ---
@@ -85,18 +85,20 @@ gh repo set-default <owner/repo>
 
 ### Remote Configuration
 
+`gh` does not manage git remotes — use `git` (or `jj git remote` in a jj repo):
+
 ```bash
 # List remotes
-gh remote list
+git remote -v
 
 # Add a remote
-gh remote add <name> <url>
+git remote add <name> <url>
 
 # Remove a remote
-gh remote remove <name>
+git remote remove <name>
 
 # View remote URL
-gh remote get-url <name>
+git remote get-url <name>
 ```
 
 ## Pull Requests
@@ -155,18 +157,15 @@ gh pr checkout <number> --repo <owner/repo>
 ### Reviewing
 
 ```bash
-# View PR details
+# View PR details (includes reviews and commit list)
 gh pr view <number>
 
-# List PR comments
-gh pr comments <number>
-
-# List PR reviews
-gh pr reviews <number>
+# View a PR including its comments
+gh pr view <number> --comments
 
 # Submit a review
-gh pr review <number> --approve --comment "looks good"
-gh pr review <number> --request-changes --comment "needs work"
+gh pr review <number> --approve --body "looks good"
+gh pr review <number> --request-changes --body "needs work"
 
 # List changes in a PR
 gh pr diff <number>
@@ -191,9 +190,6 @@ gh pr merge <number> --delete-branch
 ### Updating
 
 ```bash
-# List commits in a PR
-gh pr commits <number>
-
 # View PR status checks
 gh pr checks <number>
 
@@ -244,8 +240,8 @@ gh issue create --repo <owner/repo>
 # View an issue
 gh issue view <number>
 
-# List issue comments
-gh issue comments <number>
+# View an issue including its comments
+gh issue view <number> --comments
 
 # Add a comment to an issue
 gh issue comment <number> --body "comment"
@@ -255,9 +251,6 @@ gh issue close <number>
 
 # Reopen an issue
 gh issue reopen <number>
-
-# List issue events/timeline
-gh issue events <number>
 ```
 
 ### Checkout
