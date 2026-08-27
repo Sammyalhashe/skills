@@ -1,0 +1,5 @@
+{
+  "name": "resume-reviewer",
+  "description": "Reviews software-engineering resumes and rewrites weak bullets into impact-driven ones.",
+  "version": "1.0.0"
+}
