@@ -1,0 +1,5 @@
+{
+  "name": "base-mcp",
+  "description": "Base MCP skill for onchain wallet, swap, x402, and third-party plugin workflows.",
+  "version": "1.0.0"
+}
