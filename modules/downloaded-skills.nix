@@ -3,8 +3,9 @@
 let
   buildSkill = import ./build-skill.nix;
 
+  # Skills fetched from other people's repos. Empty is fine — the aggregate
+  # below just becomes an empty tree.
   externalSkills = [
-    { owner = "juliusbrussee"; repo = "caveman"; rev = "655b7d9c5431f822264b7732e9901c5578ac84cf"; sha256 = "sha256-BydREt/vai3j7kO5+e1OxsjXf6Vy+jSY1yA/yyxjHbI="; skillType = "single"; }
   ];
 
   fetchSkill = { owner, repo, rev, sha256 }: pkgs.fetchFromGitHub {
