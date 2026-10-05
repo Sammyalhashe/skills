@@ -1,0 +1,5 @@
+{
+  "name": "hunk",
+  "description": "Loads Hunk's bundled review skill for interactive diff reviews.",
+  "version": "1.0.0"
+}
