@@ -1,6 +1,6 @@
 # AI Skills Flake
 
-Multi-platform AI agent skill distribution system. Provides skills, rules, and composition utilities for Claude, Gemini, and OpenAI agents via Nix.
+Multi-platform AI agent skill distribution system. Provides skills, rules, and composition utilities for Claude, Gemini, OpenAI, and Codex agents via Nix.
 
 ## Flake Outputs
 
@@ -143,7 +143,8 @@ lib.composeSkills  # Function to build a custom bundle from selected skills + ag
   outputs = { self, skills, ... }:
     let system = "x86_64-linux";
     in {
-      # The skill package has platform dirs: claude/jj/, gemini/jj/, openai/jj/
+      # The skill package has platform dirs: claude/jj/, gemini/jj/, openai/jj/,
+      # and codex/skills/jj/
       packages.${system}.jj-skill = skills.packages.${system}.skill-jj;
     };
 }
@@ -180,10 +181,18 @@ gemini/
   GEMINI.md                        → @AGENTS.md
   AGENTS.md                        → same structure
   ...
+codex/
+  skills/jj/SKILL.md               → discovered natively by Codex
+  skills/gh/SKILL.md               → discovered natively by Codex
+  agents/neckbeard-nate.toml       → custom agent definition
+  agents/planning-paul.toml        → custom agent definition
+  ...
 ```
 
 - **`AGENTS.md`** is the single source of truth: global rules + routing tables for both skills and agent personas
 - **`CLAUDE.md`** / **`GEMINI.md`** / **`OPENAI.md`** are platform shims that just import `@AGENTS.md`
+- **Codex skills** use the same `SKILL.md` format under `codex/skills/`; Codex discovers them natively without a routing table
+- **Codex agents** are generated as TOML under `codex/agents/`, with the Markdown body as `developer_instructions`
 - **No content is concatenated** into AGENTS.md — each `SKILL.md` and `AGENT.md` is loaded on-demand via routing table references, keeping the base context window small (~190 lines)
 - **Skills** are procedures ("what to do"); **agents** are personas ("how to think")
 
@@ -248,6 +257,7 @@ hooks/                       # Hook scripts
 modules/
   build-skill.nix            # Single skill → platform derivation
   build-agent.nix            # Single agent → platform derivation
+  build-agent.py             # AGENT.md → Codex agent TOML converter
   build-rules.nix            # Rules → AGENTS.md derivation
   compose-skills.nix         # [skills] + [agents] + rules → unified bundle
   install_skills.nix         # All-local composition wrapper

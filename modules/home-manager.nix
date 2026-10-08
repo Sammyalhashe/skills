@@ -57,5 +57,15 @@ in
       source = "${effectivePackage}/claude";
       recursive = true;
     };
+
+    home.file.".codex/skills" = {
+      source = "${effectivePackage}/codex/skills";
+      recursive = true;
+    };
+
+    home.file.".codex/agents" = {
+      source = "${effectivePackage}/codex/agents";
+      recursive = true;
+    };
   };
 }

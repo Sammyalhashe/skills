@@ -11,5 +11,8 @@ pkgs.stdenvNoCC.mkDerivation {
       mkdir -p "$out/$platform/${skillName}"
       cp -r $src/. "$out/$platform/${skillName}/"
     done
+
+    mkdir -p "$out/codex/skills/${skillName}"
+    cp -r $src/. "$out/codex/skills/${skillName}/"
   '';
 }

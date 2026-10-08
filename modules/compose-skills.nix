@@ -28,6 +28,16 @@ pkgs.stdenvNoCC.mkDerivation {
           done
         fi
       done
+
+      if [ -d "${skillPkg}/codex/skills" ]; then
+        for skillDir in ${skillPkg}/codex/skills/*/; do
+          if [ -d "$skillDir" ]; then
+            skillName=$(basename "$skillDir")
+            mkdir -p "$out/codex/skills/$skillName"
+            cp -r "$skillDir/." "$out/codex/skills/$skillName/"
+          fi
+        done
+      fi
     '') skills);
 
     skillRouting = pkgs.lib.concatStringsSep "\n" (map (skillPkg: ''
@@ -47,6 +57,11 @@ pkgs.stdenvNoCC.mkDerivation {
           cp -r "${agentPkg}/$platform/agents/." "$out/$platform/agents/"
         fi
       done
+
+      if [ -d "${agentPkg}/codex/agents" ]; then
+        mkdir -p "$out/codex/agents"
+        cp -r "${agentPkg}/codex/agents/." "$out/codex/agents/"
+      fi
     '') agents);
 
     agentRouting = pkgs.lib.concatStringsSep "\n" (map (agentPkg: ''
@@ -84,7 +99,7 @@ pkgs.stdenvNoCC.mkDerivation {
       done
     '' else "");
   in ''
-    mkdir -p $out/claude $out/gemini $out/openai
+    mkdir -p $out/claude $out/gemini $out/openai $out/codex/skills $out/codex/agents
 
     # Install skills and agents
     ${skillInstalls}
